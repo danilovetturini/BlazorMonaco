@@ -64,4 +64,13 @@ https://github.com/serdarciplak/BlazorMonaco/blob/master/CHANGELOG.md</PackageRe
     <Folder Include="wwwroot\lib\monaco-editor\min\vs\language\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\jsInterop.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\lib\monaco-editor\min\vs\editor\editor.main.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

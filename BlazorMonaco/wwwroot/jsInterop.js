@@ -31,6 +31,55 @@ window.blazorMonaco.editor = {
         let editorHolder = this.getEditorHolder(id, silent);
         return editorHolder == null ? null : editorHolder.editor;
     },
+    removeContextMenuItems: function (editorId, removableIds) {
+        // Accedi al modulo 'actions' per ottenere MenuRegistry
+        var actionsModule = require('vs/platform/actions/common/actions');
+        var MenuRegistry = actionsModule.MenuRegistry;
+
+        // menus è una Map, quindi usiamo Array.from per ottenere le entry
+        var menus = MenuRegistry._menuItems;
+        var contextMenuEntry = Array.from(menus.entries()).find(function (entry) {
+            // Qui si controlla la proprietà 'id' della chiave (che può contenere _debugName o id)
+            // In alcuni casi la chiave potrebbe avere _debugName oppure id.
+            return entry[0]._debugName === "EditorContext" || entry[0].id === "EditorContext";
+        });
+
+        if (!contextMenuEntry) {
+            console.warn("EditorContext menu not found");
+            return false;
+        }
+
+        var contextMenuLinks = contextMenuEntry[1];
+
+        // Per il debug: mostra tutti gli id dei comandi presenti nel menu
+        var allCommandIds = [];
+        var node = contextMenuLinks._first;
+        while (node) {
+            if (node.element && node.element.command && node.element.command.id) {
+                allCommandIds.push(node.element.command.id);
+            }
+            node = node.next;
+        }
+        console.log("All command ids:", allCommandIds);
+
+        // Funzione helper per iterare e rimuovere i nodi
+        var removeById = function (list, ids) {
+            var node = list._first;
+            while (node) {
+                if (node.element && node.element.command && ids.indexOf(node.element.command.id) !== -1) {
+                    var nextNode = node.next; // salva il nodo successivo prima di rimuovere
+                    list._remove(node);
+                    node = nextNode;
+                } else {
+                    node = node.next;
+                }
+            }
+        };
+
+        removeById(contextMenuLinks, removableIds);
+        return true;
+    }
+,
 
     getEditorLineNumber: function (editorId, lineNumber) {
         const editorHolder = this.getEditorHolder(editorId, true);
@@ -1067,6 +1116,7 @@ window.blazorMonaco.languages = {
             }
         });
     }
+
 
     //#endregion
 }

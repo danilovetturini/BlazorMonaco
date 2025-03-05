@@ -127,6 +127,59 @@ namespace BlazorMonaco.Editor
             _actions[actionDescriptor.Id] = new List<ActionDescriptor> { actionDescriptor };
             return JsRuntime.SafeInvokeAsync("blazorMonaco.editor.addAction", Id, actionDescriptor);
         }
+
+       
+
+        public async Task<IDisposable> AddActionDisposable(ActionDescriptor actionDescriptor)
+        {
+            if (_actions.ContainsKey(actionDescriptor.Id))
+            {
+                _actions[actionDescriptor.Id].Add(actionDescriptor);
+            }
+            else
+            {
+                _actions[actionDescriptor.Id] = new List<ActionDescriptor> { actionDescriptor };
+                await JsRuntime.SafeInvokeAsync("blazorMonaco.editor.addAction", Id, actionDescriptor);
+            }
+            return new ActionDisposable(this, actionDescriptor.Id, actionDescriptor);
+        }
+
+        private void RemoveAction(string actionId, ActionDescriptor actionDescriptor)
+        {
+            if (_actions.TryGetValue(actionId, out var actionsList))
+            {
+                actionsList.Remove(actionDescriptor);
+                if (actionsList.Count == 0)
+                {
+                    _actions.Remove(actionId);
+                    // Se esiste una funzione JS per rimuovere l'azione dalla UI, potresti richiamarla qui:
+                    // JsRuntime.SafeInvokeAsync("blazorMonaco.editor.removeAction", Id, actionId);
+                }
+            }
+        }
+        private class ActionDisposable : IDisposable
+        {
+            private readonly StandaloneCodeEditor _editor;
+            private readonly string _actionId;
+            private readonly ActionDescriptor _actionDescriptor;
+            private bool _disposed;
+
+            public ActionDisposable(StandaloneCodeEditor editor, string actionId, ActionDescriptor actionDescriptor)
+            {
+                _editor = editor;
+                _actionId = actionId;
+                _actionDescriptor = actionDescriptor;
+            }
+
+            public void Dispose()
+            {
+                if (!_disposed)
+                {
+                    _editor.RemoveAction(_actionId, _actionDescriptor);
+                    _disposed = true;
+                }
+            }
+        }
     }
 
     /**

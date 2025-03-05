@@ -312,6 +312,12 @@ namespace BlazorMonaco.Editor
             var payloadJsonElement = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(payload));
             return JsRuntime.SafeInvokeAsync("blazorMonaco.editor.trigger", Id, source, handlerId, payloadJsonElement);
         }
+
+        public Task RemoveContextMenuItems()
+        {
+            return JsRuntime.SafeInvokeAsync("blazorMonaco.editor.removeContextMenuItems", Id, new string[] { "vs.editor.ICodeEditor:1:setLabel" });
+        }
+
         /**
          * Gets the current model attached to this editor.
          */
